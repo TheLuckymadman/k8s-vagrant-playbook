@@ -1,0 +1,41 @@
+- name: Fetch master server ip address
+  debug:
+  #var: ansible_facts
+    var: ansible_facts["{{ interface }}"]["ipv4"]["address"]
+  #msg: "{{ devices.enp0s8.device }}"
+  #msg: "{{ ansible_all_ipv4_addresses }}"
+  register: apiserver_advertise_address
+  tags: masters
+
+- name: debug var
+  debug:
+    msg: "{{ apiserver_advertise_address }}"
+  tags: masters
+
+- name: Kubeadm generate the cert key
+  command: "kubeadm init phase upload-certs --upload-certs"
+  register: cert_key
+  tags: masters
+
+- name: Print cert key
+  debug:
+    var: cert_key.stdout_lines[2]
+  tags: masters
+
+- name: Print kubeadm join command
+  debug:
+    msg: "kubeadm join --token {{ kubeadm_token.stdout }} {{ control_plane_endpoint }}:6443 
+  --discovery-token-ca-cert-hash sha256:{{ token_ca_hash.stdout }} --control-plane 
+  --certificate-key {{ cert_key.stdout_lines[2] }} --apiserver-advertise-address={{ hostvars[item]['ansible_facts'][interface]['ipv4']['address'] }}"
+  with_items: "{{ groups['kube-master'][1:] }}"
+  tags: masters
+
+- name: Join masters
+  delegate_to: "{{ item }}"
+  shell: "if ! [ -e /etc/kubernetes/kubelet.conf ]; then 
+  kubeadm join --token {{ kubeadm_token.stdout }} {{ control_plane_endpoint }}:6443 
+  --discovery-token-ca-cert-hash sha256:{{ token_ca_hash.stdout }} --control-plane 
+  --certificate-key {{ cert_key.stdout_lines[2] }} --apiserver-advertise-address={{ hostvars[item]['ansible_facts'][interface]['ipv4']['address'] }}; fi"
+  #with_items: "{{ groups['kube-node'][0] }}"
+  with_items: "{{ groups['kube-master'][1:] }}"
+  tags: masters

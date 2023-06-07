@@ -1,0 +1,7 @@
+- name: Write sysctl to file
+  template:
+    src: sysctl.d.j2
+    dest: /etc/sysctl.d/k8s.conf
+
+- name: Apply sysctl params without reboot
+  command: sysctl --system

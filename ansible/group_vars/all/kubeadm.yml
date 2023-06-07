@@ -1,0 +1,4 @@
+control_plane_endpoint: lks-cluster.local
+interface: enp0s8
+pods_cidr: "10.244.0.0/16"
+etcd_version: "v3.5.0"
