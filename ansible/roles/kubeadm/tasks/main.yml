@@ -22,7 +22,7 @@
   shell: "if ! [ -e /etc/kubernetes/kubelet.conf ]; then 
   kubeadm init --apiserver-advertise-address={{ apiserver_advertise_address.values() | first }} 
   --control-plane-endpoint={{ control_plane_endpoint }} 
-  --pod-network-cidr={{ pods_cidr }} --upload-certs; fi"
+  --pod-network-cidr={{ pods_cidr }}; fi"
   register: kubeadm_init_out
   ignore_errors: true
 

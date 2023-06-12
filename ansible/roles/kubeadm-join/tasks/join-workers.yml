@@ -1,9 +1,18 @@
-#- name:  
+- name: Copy KubeletConfiguration to master
+  delegate_to: "{{ item }}"
+  template:
+    src: KubeletConfiguration-join.yaml.j2
+    dest: /etc/kubernetes/KubeletConfiguration.yaml
+  with_items: "{{ groups['kube-node'] }}"
+  tags: workers
+
 - name: Join workers
   delegate_to: "{{ item }}"
+  # shell: "if ! [ -e /etc/kubernetes/kubelet.conf ]; then 
+  # kubeadm join --token {{ kubeadm_token.stdout }} {{ control_plane_endpoint }}:6443 
+  # --discovery-token-ca-cert-hash sha256:{{ token_ca_hash.stdout }} --config {{ kubeletConfiguration }}; fi"
   shell: "if ! [ -e /etc/kubernetes/kubelet.conf ]; then 
-  kubeadm join --token {{ kubeadm_token.stdout }} {{ control_plane_endpoint }}:6443 
-  --discovery-token-ca-cert-hash sha256:{{ token_ca_hash.stdout }}; fi"
+  kubeadm join --config /etc/kubernetes/KubeletConfiguration.yaml; fi"
   #with_items: "{{ groups['kube-node'][0] }}"
   with_items: "{{ groups['kube-node'] }}"
   tags: workers

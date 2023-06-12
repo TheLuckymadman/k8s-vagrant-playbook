@@ -48,7 +48,7 @@
   become: yes
   roles:
   - role: kubeadm-join
-#  tags: workers
+  #tags: workers
 
 - hosts: kube-master[0]
   become: yes

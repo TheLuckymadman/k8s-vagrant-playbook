@@ -1,2 +1,1 @@
----
-# defaults file for kubeadm-join
+kubeletConfiguration: files/KubeletConfiguration.yaml
