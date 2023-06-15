@@ -1,0 +1,45 @@
+- name: install the required packages
+  ansible.builtin.apt:
+    pkg:
+    - ca-certificates
+    - curl
+    - gnupg
+    - lsb-release
+    update_cache: yes
+    
+- name: Add a gpg key for docker repo
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: install containerd and runc
+  ansible.builtin.apt:
+    pkg:
+    - containerd.io
+
+- name: Create dir for CNI
+  ansible.builtin.file:
+    path: /opt/cni/bin
+    state: directory
+    #mode: '0755'
+
+- name: install CNI plugin
+  ansible.builtin.unarchive:
+    src: https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+    dest: /opt/cni/bin
+    remote_src: yes
+
+- name: Generate config.toml
+  shell: containerd config default > /etc/containerd/config.toml
+
+- name: Enable systemd cgroup driver
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    line: '            SystemdCgroup = true'
+  notify: "restart containerd"

@@ -1,0 +1,11 @@
+- name: Token generation
+  include_tasks: generate-tokens.yml
+  tags: [ workers, masters ]
+
+- name: Join wrokers
+  include_tasks: join-workers.yml
+  tags: workers
+ 
+- name: Join masters
+  include_tasks: join-masters.yml
+  tags: masters

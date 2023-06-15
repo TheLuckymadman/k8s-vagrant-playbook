@@ -1,0 +1,84 @@
+- name: Add a gpg key for Google Cloud repo
+  ansible.builtin.apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Google Cloud Repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Install kubelet
+  ansible.builtin.apt:
+    name: kubelet=1.22.15-00
+    state: present
+    allow_downgrade: yes
+
+- name: Hold kubelet
+  ansible.builtin.dpkg_selections:
+    name: kubelet
+    selection: hold
+
+- name: Install kubeadm 
+  ansible.builtin.apt:
+    name: kubeadm=1.22.15-00
+    state: present
+    allow_downgrade: yes
+
+- name: Hold kubeadm
+  ansible.builtin.dpkg_selections:
+    name: kubeadm
+    selection: hold
+
+- name: Install kubectl 
+  ansible.builtin.apt:
+    name: kubectl=1.22.15-00
+    state: present
+    allow_downgrade: yes
+
+- name: Hold kubectl
+  ansible.builtin.dpkg_selections:
+    name: kubectl
+    selection: hold
+
+- name: Etcd download
+  ansible.builtin.get_url:
+    url: "https://storage.googleapis.com/etcd/{{etcd_version}}/etcd-{{etcd_version}}-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-{{etcd_version}}-linux-amd64.tar.gz"
+    mode: '0440'
+
+- name: Etcd archive extract
+  ansible.builtin.unarchive:
+    src: "/tmp/etcd-{{etcd_version}}-linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Move etcdctl to /usr/bin
+  ansible.builtin.copy:
+    src: "/tmp/etcd-{{etcd_version}}-linux-amd64/etcdctl"
+    dest: /usr/local/bin/etcdctl
+    mode: '0755'
+    remote_src: yes
+
+- name: Download Helm
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3"
+    dest: "/tmp/get_helm.sh"
+    mode: '0700'
+
+- name: Install Helm
+  command: /tmp/get_helm.sh
+
+- name: Add debian Repository
+  apt_repository:
+    repo: deb [trusted=yes] http://ftp.de.debian.org/debian buster main
+    state: present
+
+- name: Add key for Debian repo with kubens and kubectx
+  command: apt-key adv --keyserver keyserver.ubuntu.com --recv-keys  0E98404D386FA1D9
+
+- name: install kubens and kubectx
+  ansible.builtin.apt:
+    pkg:
+    - kubectx
+    update_cache: yes

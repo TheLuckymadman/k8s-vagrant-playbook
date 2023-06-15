@@ -1,0 +1,20 @@
+- name: Kubeadm token create
+  command: "kubeadm token create"
+  register: kubeadm_token
+  tags: [ workers, masters ]
+
+- name: Pring kubeadm token
+  debug:
+    var: kubeadm_token.stdout
+  tags: [ workers, masters ]
+
+- name: discovery-token-ca-cert-hash
+  shell: "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | \
+   openssl dgst -sha256 -hex | sed 's/^.* //'"
+  register: token_ca_hash
+  tags: [ workers, masters ]
+
+- name: Pring token ca hash
+  debug:
+    var: token_ca_hash.stdout
+  tags: [ workers, masters ]

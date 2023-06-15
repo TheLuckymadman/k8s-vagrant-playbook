@@ -1,0 +1,38 @@
+#The role adds: 
+# 1. Prompt helper for bash/zsh: Displays current context and namespace
+# 2. Bash aliases fro kubectl - k, kdp, etc.
+- name: Install bash-completion 
+  apt:
+    pkg:
+    - bash-completion
+
+  
+- name: Create dir /root/.local/bin 
+  file:
+    path: /root/.local/bin
+    state: directory
+
+- name: Upload kube-ps1.sh
+  copy:
+    src: files/kube-ps1.sh
+    dest: /root/.local/bin/kube-ps1.sh
+
+- name: Create dir /root/.local 
+  file:
+    path: /root/.config
+    state: directory
+
+- name: Upload kubectl-aliases.sh
+  copy:
+    src: files/kubectl-aliases.sh
+    dest: /root/.config/kubectl-aliases.sh
+
+- name: set up .bashrc
+  lineinfile:
+    path: /root/.bashrc
+    line: "{{ item }}"
+  loop: 
+  - "source /etc/bash_completion"
+  - "source <(kubectl completion bash)"
+  - "source $HOME/.config/kubectl-aliases.sh"
+  - "source $HOME/.local/bin/kube-ps1.sh"

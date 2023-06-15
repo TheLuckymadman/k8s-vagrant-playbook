@@ -1,0 +1,19 @@
+- name: add k8s hosts to hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    #search_string: '127.0.0.1'
+    line: '{{ hostvars[item]["ansible_facts"][interface]["ipv4"]["address"] }} {{ item }}'
+    #line: "{{ item }}" 
+    state: present
+  loop: "{{ groups['all'] }}"
+
+- name: add control plane address
+  lineinfile:
+    path: /etc/hosts
+    line: '{{ hostvars[item]["ansible_facts"][interface]["ipv4"]["address"] }} {{ control_plane_endpoint }}'
+    state: present
+  with_items: "{{ groups['kube-master'][0] }}"
+
+# - name: add control plane address
+#   debug:
+#     msg: "{{ groups['kube-master'][0] }}"

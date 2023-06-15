@@ -1,0 +1,9 @@
+- name: Write modules to file
+  template:
+    src: modules-load.j2
+    dest: /etc/modules-load.d/k8s.conf
+
+- modprobe:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ modules }}"

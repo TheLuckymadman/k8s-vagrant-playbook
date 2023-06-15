@@ -1,0 +1,7 @@
+# Ansible
+.idea/
+#roles/*
+#!roles/requirements.yml
+ansible.log
+*.retry
+*.log
